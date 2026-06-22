@@ -30,12 +30,42 @@ const socials = [
 
 export default function Contact() {
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSent(true);
-    setTimeout(() => setSent(false), 3000);
+    setError(false);
+    setSubmitting(true);
+
+    const form = formRef.current;
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const data: Record<string, string> = {};
+    formData.forEach((value, key) => {
+      data[key] = value.toString();
+    });
+
+    try {
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) throw new Error("Failed to send");
+
+      setSent(true);
+      form.reset();
+      setTimeout(() => setSent(false), 4000);
+    } catch {
+      setError(true);
+      setTimeout(() => setError(false), 4000);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -63,10 +93,27 @@ export default function Contact() {
 
         <div className="grid gap-10 md:grid-cols-2 md:gap-16">
           <ScrollReveal delay={0.2} direction="left">
-            <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
+            <form
+              ref={formRef}
+              action="https://api.web3forms.com/submit"
+              method="POST"
+              onSubmit={handleSubmit}
+              className="space-y-5"
+            >
+              <input
+                type="hidden"
+                name="access_key"
+                value="6de7731c-198f-4c21-9afe-d68f6d6c7e61"
+              />
+              <input
+                type="hidden"
+                name="subject"
+                value="New message from portfolio"
+              />
               <div>
                 <input
                   type="text"
+                  name="name"
                   placeholder="Your Name"
                   required
                   className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-accent"
@@ -75,6 +122,7 @@ export default function Contact() {
               <div>
                 <input
                   type="email"
+                  name="email"
                   placeholder="Your Email"
                   required
                   className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-accent"
@@ -82,19 +130,28 @@ export default function Contact() {
               </div>
               <div>
                 <textarea
+                  name="message"
                   placeholder="Your Message"
                   rows={4}
                   required
                   className="w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-accent"
                 />
               </div>
+              {error && (
+                <p className="text-sm text-red-500">
+                  Something went wrong. Please try again.
+                </p>
+              )}
               <motion.button
                 type="submit"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl amber-gradient px-6 py-3 text-sm font-medium text-black transition-all hover:opacity-90 hover:shadow-lg hover:shadow-amber-500/25"
+                disabled={submitting}
+                whileHover={{ scale: submitting ? 1 : 1.02 }}
+                whileTap={{ scale: submitting ? 1 : 0.98 }}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl amber-gradient px-6 py-3 text-sm font-medium text-black transition-all hover:opacity-90 hover:shadow-lg hover:shadow-amber-500/25 disabled:opacity-60"
               >
-                {sent ? (
+                {submitting ? (
+                  "Sending..."
+                ) : sent ? (
                   "Sent! Thanks 🚀"
                 ) : (
                   <>
