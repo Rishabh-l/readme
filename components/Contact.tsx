@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import { Send, Mail, Phone } from "lucide-react";
 import ScrollReveal from "./ScrollReveal";
@@ -29,42 +29,46 @@ const socials = [
 ];
 
 export default function Contact() {
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [status, setStatus] = useState<"success" | "error" | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(false);
-    setSubmitting(true);
-
-    const form = formRef.current;
-    if (!form) return;
-
-    const formData = new FormData(form);
-    const data: Record<string, string> = {};
-    formData.forEach((value, key) => {
-      data[key] = value.toString();
-    });
+    setIsLoading(true);
+    setStatus(null);
 
     try {
       const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          access_key: "6de7731c-198f-4c21-9afe-d68f6d6c7e61",
+          name,
+          email,
+          message,
+          subject: "New message from rishio.vercel.app",
+        }),
       });
+      const data = await res.json();
 
-      if (!res.ok) throw new Error("Failed to send");
-
-      setSent(true);
-      form.reset();
-      setTimeout(() => setSent(false), 4000);
+      if (data.success) {
+        setStatus("success");
+        setName("");
+        setEmail("");
+        setMessage("");
+      } else {
+        setStatus("error");
+      }
     } catch {
-      setError(true);
-      setTimeout(() => setError(false), 4000);
+      setStatus("error");
     } finally {
-      setSubmitting(false);
+      setIsLoading(false);
     }
   }
 
@@ -93,71 +97,54 @@ export default function Contact() {
 
         <div className="grid gap-10 md:grid-cols-2 md:gap-16">
           <ScrollReveal delay={0.2} direction="left">
-            <form
-              ref={formRef}
-              action="https://api.web3forms.com/submit"
-              method="POST"
-              onSubmit={handleSubmit}
-              className="space-y-5"
-            >
-              <input
-                type="hidden"
-                name="access_key"
-                value="6de7731c-198f-4c21-9afe-d68f6d6c7e61"
-              />
-              <input
-                type="hidden"
-                name="subject"
-                value="New message from portfolio"
-              />
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <input
                   type="text"
-                  name="name"
                   placeholder="Your Name"
                   required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-accent"
                 />
               </div>
               <div>
                 <input
                   type="email"
-                  name="email"
                   placeholder="Your Email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-accent"
                 />
               </div>
               <div>
                 <textarea
-                  name="message"
                   placeholder="Your Message"
                   rows={4}
                   required
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                   className="w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-accent"
                 />
               </div>
-              {error && (
+              {status === "error" && (
                 <p className="text-sm text-red-500">
-                  Something went wrong. Please try again.
+                  Something went wrong. Try again.
                 </p>
+              )}
+              {status === "success" && (
+                <p className="text-sm text-green-500">Message sent!</p>
               )}
               <motion.button
                 type="submit"
-                disabled={submitting}
-                whileHover={{ scale: submitting ? 1 : 1.02 }}
-                whileTap={{ scale: submitting ? 1 : 0.98 }}
+                disabled={isLoading}
+                whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                whileTap={{ scale: isLoading ? 1 : 0.98 }}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl amber-gradient px-6 py-3 text-sm font-medium text-black transition-all hover:opacity-90 hover:shadow-lg hover:shadow-amber-500/25 disabled:opacity-60"
               >
-                {submitting ? (
-                  "Sending..."
-                ) : sent ? (
-                  "Sent! Thanks 🚀"
-                ) : (
-                  <>
-                    Send Message <Send size={16} />
-                  </>
-                )}
+                {isLoading ? "Sending..." : "Send Message"}
+                {!isLoading && <Send size={16} />}
               </motion.button>
             </form>
           </ScrollReveal>
