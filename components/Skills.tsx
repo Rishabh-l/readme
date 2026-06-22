@@ -13,7 +13,8 @@ function SkillBadge({ name, index }: { name: string; index: number }) {
       viewport={{ once: true }}
       transition={{ duration: 0.3, delay: index * 0.03 }}
       whileHover={{ scale: 1.05, y: -2 }}
-      className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-accent hover:text-accent hover:bg-accent/5"
+      style={{ animationDelay: `${(index % 10) * 0.2}s` }}
+      className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-accent hover:text-accent hover:bg-accent/5 animate-[float-badge_3s_ease-in-out_infinite]"
     >
       {name}
     </motion.span>
@@ -22,8 +23,14 @@ function SkillBadge({ name, index }: { name: string; index: number }) {
 
 export default function Skills() {
   return (
-    <section id="skills" className="section-padding">
-      <div className="max-width">
+    <section id="skills" className="section-padding bg-deep">
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="max-width"
+      >
         <ScrollReveal>
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border px-4 py-1.5 text-xs font-medium text-muted">
             <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse-glow" />
@@ -62,7 +69,7 @@ export default function Skills() {
             );
           })}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

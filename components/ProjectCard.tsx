@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, type MouseEvent } from "react";
 import { motion } from "motion/react";
 import { ExternalLink } from "lucide-react";
 import type { Project } from "@/data/projects";
@@ -10,16 +11,56 @@ interface ProjectCardProps {
 }
 
 export default function ProjectCard({ project, index }: ProjectCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const glareRef = useRef<HTMLDivElement>(null);
+
+  function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
+    const card = cardRef.current;
+    const glare = glareRef.current;
+    if (!card || !glare) return;
+
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const rotateX = ((y - centerY) / centerY) * -10;
+    const rotateY = ((x - centerX) / centerX) * 10;
+
+    card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+    glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.08), transparent 60%)`;
+    glare.style.opacity = "1";
+  }
+
+  function handleMouseLeave() {
+    const card = cardRef.current;
+    const glare = glareRef.current;
+    if (!card || !glare) return;
+
+    card.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg)";
+    glare.style.opacity = "0";
+  }
+
   return (
     <motion.div
+      ref={cardRef}
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay: index * 0.1, ease: [0.25, 0.4, 0.25, 1] as const }}
-      whileHover={{ y: -4 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ transformStyle: "preserve-3d", transition: "transform 0.3s ease" }}
       className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 transition-colors hover:bg-card-hover hover:border-border-hover sm:p-8"
     >
-      <div className="flex h-full flex-col justify-between gap-4">
+      <div
+        ref={glareRef}
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300"
+        style={{ borderRadius: "inherit" }}
+      />
+      <div className="flex h-full flex-col justify-between gap-4" style={{ transformStyle: "preserve-3d" }}>
         <div>
           <div className="mb-4 flex items-center justify-between">
             <span className="text-xs font-medium text-muted">

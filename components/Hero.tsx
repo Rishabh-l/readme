@@ -29,6 +29,13 @@ export default function Hero() {
       id="home"
       className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4"
     >
+      <div className="pointer-events-none absolute inset-0 z-1 opacity-[0.12]">
+        <div className="absolute -left-1/4 -top-1/4 h-[60vh] w-[60vh] rounded-full bg-[#f59e0b] blur-[120px] animate-gradient-mesh-1" />
+        <div className="absolute -right-1/4 -bottom-1/4 h-[50vh] w-[50vh] rounded-full bg-[#1e3a8a] blur-[100px] animate-gradient-mesh-2" />
+        <div className="absolute left-1/3 top-1/3 h-[40vh] w-[40vh] rounded-full bg-[#4c1d95] blur-[90px] animate-gradient-mesh-3" />
+        <div className="absolute right-1/3 bottom-1/3 h-[45vh] w-[45vh] rounded-full bg-[#0d9488] blur-[100px] animate-gradient-mesh-4" />
+      </div>
+
       <motion.div
         variants={containerVariants}
         initial="hidden"

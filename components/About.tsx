@@ -27,8 +27,14 @@ const highlights = [
 
 export default function About() {
   return (
-    <section id="about" className="section-padding">
-      <div className="max-width">
+    <section id="about" className="section-padding bg-deep">
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="max-width"
+      >
         <ScrollReveal>
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border px-4 py-1.5 text-xs font-medium text-muted">
             <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse-glow" />
@@ -93,7 +99,7 @@ export default function About() {
             </div>
           </ScrollReveal>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

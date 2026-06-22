@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import ScrollReveal from "./ScrollReveal";
 import ProjectCard from "./ProjectCard";
 import { projects } from "@/data/projects";
@@ -10,7 +11,13 @@ export default function Projects() {
 
   return (
     <section id="projects" className="section-padding">
-      <div className="max-width">
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="max-width"
+      >
         <ScrollReveal>
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border px-4 py-1.5 text-xs font-medium text-muted">
             <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse-glow" />
@@ -24,7 +31,6 @@ export default function Projects() {
           </h2>
         </ScrollReveal>
 
-        {/* Featured projects - larger bento grid */}
         <div className="mb-8 grid gap-6 md:grid-cols-3">
           {featured.map((project, i) => {
             const isLarge = i === 0;
@@ -39,7 +45,6 @@ export default function Projects() {
           })}
         </div>
 
-        {/* Other projects */}
         <div className="grid gap-6 md:grid-cols-3">
           {other.map((project, i) => (
             <ProjectCard
@@ -49,7 +54,7 @@ export default function Projects() {
             />
           ))}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }
