@@ -33,12 +33,23 @@ export default function Contact() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState<"success" | "error" | null>(null);
+  const [status, setStatus] = useState<"success" | "error" | "limit" | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
     setStatus(null);
+
+    const now = Date.now();
+    const raw = localStorage.getItem("contact_submissions");
+    const timestamps: number[] = raw ? JSON.parse(raw) : [];
+    const recent = timestamps.filter((t) => now - t < 86400000);
+
+    if (recent.length >= 3) {
+      setStatus("limit");
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch("https://api.web3forms.com/submit", {
@@ -58,6 +69,8 @@ export default function Contact() {
       const data = await res.json();
 
       if (data.success) {
+        recent.push(now);
+        localStorage.setItem("contact_submissions", JSON.stringify(recent));
         setStatus("success");
         setName("");
         setEmail("");
@@ -135,6 +148,12 @@ export default function Contact() {
               )}
               {status === "success" && (
                 <p className="text-sm text-green-500">Message sent!</p>
+              )}
+              {status === "limit" && (
+                <p className="text-sm text-red-500">
+                  You've reached the daily limit of 3 messages. Please try again
+                  tomorrow.
+                </p>
               )}
               <motion.button
                 type="submit"
